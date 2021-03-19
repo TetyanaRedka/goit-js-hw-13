@@ -27,6 +27,7 @@ header {
   background-color: rgb(75, 91, 121);
 }
 .search-form {
+  display: flex;
   margin-left: 90px;
 }
 
@@ -86,7 +87,15 @@ header {
   display: flex;
   justify-content: space-between;
   padding: 0 10px;
+  background-color: darkgray; /* потом удалить*/
 }
+
+.stats-item {
+  display: flex;
+  align-items: center;
+  color: #301549;
+}
+
 /* ------------------------ */
 button {
   display: block;
@@ -100,4 +109,11 @@ button {
 }
 
 .is-waiting {
+}
+
+.material-icons.md-18 {
+  font-size: 18px;
+}
+.material-icons.orange600 {
+  color: #301549;
 }

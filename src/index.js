@@ -4,61 +4,74 @@ import * as basicLightbox from 'basiclightbox';
 import 'basicLightbox/dist/basicLightbox.min.css';
 
 import ApiService from './apiService';
+import ActivityBtn from './activityBtn';
 import imageForm from './template/galery.hbs';
 
-// +- настроить промежуточный класс кнопке далее, сделать неактивной. вынести на отдельную страницу
-// +- настроить иконки
-// поменять на асинки
+// +- настроить промежуточный класс кнопке далее, сделать неактивной
 // доп добавить изменение общего стиля фона изменение
+// добавить сабмит
 
 // DOM - элементы
 
 const searchForm = document.querySelector('#search-form');
 const mainNode = document.querySelector('.container');
-const loadMoreBtn = document.querySelector('.next');
-const textBtn = document.querySelector('.text-btn');
-// класс
-const apiService = new ApiService();
+const submitBtn = document.querySelector('.submit');
+
 // переменные
-let adderssScroll = 0;
+const apiService = new ApiService();
+const activityBtn = new ActivityBtn({
+  selector: '.next',
+});
+
+let addScroll = 0;
 
 // слушатели
 
-searchForm.addEventListener('input', debounce(getImage, 1000));
-loadMoreBtn.addEventListener('click', getImageNew);
+// searchForm.addEventListener('input', debounce(getImage, 1000)) // вариант 1
+searchForm.addEventListener('click', getImage); // вариант 2
+activityBtn.btn.addEventListener('click', getImageNew);
 document.addEventListener('click', openImg);
 
 // функции вызова картинок
 
-function getImage(ev) {
-  if (!ev.target.value) {
+async function getImage(ev) {
+  ev.preventDefault(); //вариант 2
+
+  if (!ev.currentTarget.elements.query.value) {
     mainNode.innerHTML = '';
-    btnHidden();
+    activityBtn.btnHidden();
     return;
   }
-  apiService.name = ev.target.value;
+  apiService.name = ev.currentTarget.elements.query.value; // вариант 2
+  // apiService.name = ev.target.value; // вариант 1
   apiService.resetPage();
-  btnWait();
-  apiService.fetchImg().then(res => {
-    if (!res.hits.length) {
-      btnHidden();
-      mainNode.innerHTML = imageForm(res.hits);
-      return;
-    }
-    mainNode.innerHTML = imageForm(res.hits);
-    btnOk();
-  });
+  activityBtn.btnWait();
+  const res = await apiService.fetchImg();
+  mainNode.innerHTML = imageForm(res.hits);
+
+  if (!res.hits.length) {
+    activityBtn.btnHidden();
+    return;
+  }
+  if (res.totalHits <= apiService.page * apiService.quantityImg) {
+    activityBtn.btnHidden();
+    return;
+  }
+  activityBtn.btnOk();
 }
 
-function getImageNew() {
+async function getImageNew() {
   apiService.incrementPage();
-  btnWait();
-  apiService.fetchImg().then(res => {
-    mainNode.insertAdjacentHTML('beforeend', imageForm(res.hits));
-    adderssScroll = adderssScroll + (340 / 3) * apiService.quantityImg;
-    scrollTo();
-    btnOk();
-  });
+  activityBtn.btnWait();
+  const res = await apiService.fetchImg();
+  mainNode.insertAdjacentHTML('beforeend', imageForm(res.hits));
+  addScroll = addScroll + (340 / 3) * apiService.quantityImg;
+  scrollTo();
+  if (res.totalHits <= apiService.page * apiService.quantityImg) {
+    activityBtn.btnHidden();
+    return;
+  }
+  activityBtn.btnOk();
 }
 
 //функция открытия картинки
@@ -76,25 +89,8 @@ function openImg(e) {
 
 function scrollTo() {
   window.scrollTo({
-    top: adderssScroll,
+    top: addScroll,
     left: 0,
     behavior: 'smooth',
   });
-}
-
-// функции активации кнопок
-
-function btnHidden() {
-  loadMoreBtn.classList.add('is-hidden');
-}
-
-function btnWait() {
-  loadMoreBtn.classList.remove('is-hidden');
-  loadMoreBtn.classList.add('is-waiting');
-  textBtn.textContent = 'waiting';
-}
-
-function btnOk() {
-  loadMoreBtn.classList.remove('is-waiting');
-  textBtn.textContent = 'Loading next';
 }
