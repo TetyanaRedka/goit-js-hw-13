@@ -27,7 +27,7 @@ header {
   background-color: rgb(75, 91, 121);
 }
 .search-form {
-  display: flex;
+  /* display: flex; */
   margin-left: 90px;
 }
 
@@ -98,7 +98,7 @@ header {
 
 /* ------------------------ */
 button {
-  display: block;
+  /* display: block; */
   height: 25px;
   border-radius: 5px;
   margin-left: 50px;

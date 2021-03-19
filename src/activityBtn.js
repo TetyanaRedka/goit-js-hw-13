@@ -20,4 +20,9 @@ export default class ActivityBtn {
     this.btn.removeAttribute('disabled', 'disabled');
     this.textBtn.textContent = 'Loading next';
   }
+
+  choiceRules(rules) {
+    if (rules) activityBtn.btnOk();
+    activityBtn.btnHidden();
+  }
 }

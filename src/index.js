@@ -28,7 +28,7 @@ let addScroll = 0;
 // слушатели
 
 // searchForm.addEventListener('input', debounce(getImage, 1000)) // вариант 1
-searchForm.addEventListener('click', getImage); // вариант 2
+searchForm.addEventListener('submit', getImage); // вариант 2
 activityBtn.btn.addEventListener('click', getImageNew);
 document.addEventListener('click', openImg);
 
@@ -36,27 +36,18 @@ document.addEventListener('click', openImg);
 
 async function getImage(ev) {
   ev.preventDefault(); //вариант 2
-
-  if (!ev.currentTarget.elements.query.value) {
+  apiService.name = ev.currentTarget.elements.query.value; // вариант 2
+  // apiService.name = ev.target.value; // вариант 1
+  if (!apiService.name) {
     mainNode.innerHTML = '';
     activityBtn.btnHidden();
     return;
   }
-  apiService.name = ev.currentTarget.elements.query.value; // вариант 2
-  // apiService.name = ev.target.value; // вариант 1
   apiService.resetPage();
   activityBtn.btnWait();
   const res = await apiService.fetchImg();
   mainNode.innerHTML = imageForm(res.hits);
-
-  if (!res.hits.length) {
-    activityBtn.btnHidden();
-    return;
-  }
-  if (res.totalHits <= apiService.page * apiService.quantityImg) {
-    activityBtn.btnHidden();
-    return;
-  }
+  if (apiService.lastPage) return activityBtn.btnHidden();
   activityBtn.btnOk();
 }
 
@@ -65,12 +56,8 @@ async function getImageNew() {
   activityBtn.btnWait();
   const res = await apiService.fetchImg();
   mainNode.insertAdjacentHTML('beforeend', imageForm(res.hits));
-  addScroll = addScroll + (340 / 3) * apiService.quantityImg;
   scrollTo();
-  if (res.totalHits <= apiService.page * apiService.quantityImg) {
-    activityBtn.btnHidden();
-    return;
-  }
+  if (apiService.lastPage) return activityBtn.btnHidden();
   activityBtn.btnOk();
 }
 
@@ -88,6 +75,7 @@ function openImg(e) {
 //функция скроллинга
 
 function scrollTo() {
+  addScroll = addScroll + (340 / 3) * apiService.quantityImg;
   window.scrollTo({
     top: addScroll,
     left: 0,

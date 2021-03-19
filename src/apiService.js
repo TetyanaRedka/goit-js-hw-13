@@ -5,13 +5,17 @@ export default class ApiService {
     this.requestName = '';
     this.page = 1;
     this.quantityImg = 0;
+    this.lastPage = false;
   }
 
-  fetchImg() {
+  async fetchImg() {
     this.quantityImg = document.querySelector('.quantity-img').value;
-    return fetch(
+    const fetchData = await fetch(
       `${config.url}?image_type=photo&orientation=horizontal&q=${this.requestName}&page=${this.page}&per_page=${this.quantityImg}&key=${config.key}`,
-    ).then(res => res.json());
+    );
+    const res = await fetchData.json();
+    this.lastPage = res.totalHits <= this.page * this.quantityImg;
+    return res;
   }
 
   resetPage() {
